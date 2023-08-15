@@ -6,34 +6,17 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PostRequest;
 use App\Models\Post;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;//ログインユーザーのやつ
+use App\Models\User;
+use Cloudinary;
 
 class PostController extends Controller
 {
     public function index(Post $post)
     {
-       //blade内で使う変数'posts'と設定。'posts'の中身にgetを使い、インスタンス化した$postを代入。
-       // クライアントインスタンス生成
-        $client = new \GuzzleHttp\Client();
-
-        // GET通信するURL
-        $url = 'https://teratail.com/api/v1/questions';
-
-        // リクエスト送信と返却データの取得
-        // Bearerトークンにアクセストークンを指定して認証を行う
-        $response = $client->request(
-            'GET',
-            $url,
-            ['Bearer' => config('services.teratail.token')]
-        );
-        
-        // API通信で取得したデータはjson形式なので
-        // PHPファイルに対応した連想配列にデコードする
-        $questions = json_decode($response->getBody(), true);
-        
         // index bladeに取得したデータを渡す
         return view('posts.index')->with([
-            'posts' => $post->getPaginateByLimit(),
-            'questions' => $questions['questions'],
+            'posts' => $post->getPaginateByLimit()
         ]);
     }
     public function show(Post $post)
@@ -47,7 +30,12 @@ class PostController extends Controller
     }
     public function store(PostRequest $request, Post $post) //新たにReqestモデルが登場　Reqestモデルにはユーザーが入力した情報があるので、Reqestモデルからnewした変数を使うことでそれらにアクセスできるようになる　気づいたらREquestのuse宣言してた
     {                                                   //毎回インスタンス化している$postに関して、「空の」Postモデルのインスタンスという表現がすごいしっくりきた
+        $post->user_id = Auth::id();
         $input = $request['post']; //$reqest['inptやtextareaのname']という風にして、$inputに入れる　この'post'はcreate.bladeのinput、textareaのnameとしてのpost
+        if($request->file('image')){
+            $image_url = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
+            $input += ['image_url' => $image_url];  //追加
+        }
         $post->fill($input)->save(); //fill関数を使うと、reqestデータが入った$inputの内容を$postの形式に上書き(fillableで定義したものだけ上書きできる)し、postモデルを通してテーブルに入力データをsave。saveは六章のデータ管理の時に出てきたinsert構文を実施できる。
         return redirect('/posts/' . $post->id);//作った記事詳細画面にリダイレクト
     }
@@ -66,6 +54,24 @@ class PostController extends Controller
     {
     $post->delete();
     return redirect('/');
+    }
+    public function account(User $user){
+        $users = Auth::user()->follows()->get();//ログインしてるユーザーidに紐づいているfollowed_user_idを全件取得している。
+        $judge = false;
+        foreach($users as $followed){
+            if($followed->id === $user->id){
+                $judge = true;
+                break;
+            }
+        }
+        return view ('accounts/account')->with(['user' => $user,'judge'=>$judge]);//アカウントページにとぶ
+    }
+    public function introduction(Request $request)
+    {
+        $user = Auth::user();
+        $input = $request['users'];
+        $user->fill($input)->save();
+        return redirect('/profile');
     }
     
 }

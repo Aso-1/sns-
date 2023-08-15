@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
+            {{ __('プロフィール') }}
         </h2>
     </x-slot>
 
@@ -12,6 +12,18 @@
                     @include('profile.partials.update-profile-information-form')
                 </div>
             </div>
+            
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <div class="max-w-xl">
+                    <p>ひとことコメント</p>
+                    <form action="/introduction" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type='text' name="users[introduction]" value="{{$user->introduction}}">
+                        <p><input type="submit" value="保存"/></p>
+                    </form>
+            </div>
+    </div>
 
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">

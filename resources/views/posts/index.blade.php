@@ -2,24 +2,39 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <title>攻略情報共有Ch</title>
+        <title>SNS(仮)</title>
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
     </head>
+    <x-app-layout>
+    <x-slot name="header">
+        　INDEX
+    </x-slot>
     <body>
-        <h1>攻略情報共有Ch</h1>
+        <h1>SNS(仮)</h1>
         <a href='/posts/create'>create</a>
         <div class='posts'>
             @foreach ($posts as $post)
             　<div class='post'>
+            　    <p>アカウント名：<a href="/users/{{$post->user->id}}">{{$post->user->name}}</a></p>
                 <h2 class='title'><a href="/posts/{{ $post->id }}">{{ $post->title }}</a></h2>
                 <p class='body'>{{ $post->body }}</p>
                 <a href="/categories/{{ $post->category->id }}">{{ $post->category->name }}</a><!--カテゴリー-->
+                <p>{{Str::limit($post->created_at,13,'')}}時</p><!--投稿日時 省略版-->
                 <form action="/posts/{{ $post->id }}" id="form_{{ $post->id }}" method="post"><!--これはDELETEメソッドで、DELETEリクエストを出す-->
                 @csrf
                 @method('DELETE')
                 <button type="button" onclick="deletePost({{ $post->id }})">削除</button> 
                 </form>
+                <div>
+                    @if ($post->comments->count())
+                        <span>
+                            返信 {{$post->comments->count()}}件
+                        </span>
+                    @else
+                        <span></span>
+                    @endif
+                </div>
             　</div>
             @endforeach
             </div>     
@@ -35,14 +50,6 @@
             }
         }
         </script>
-         <div>
-        @foreach($questions as $question)
-            <div>
-                <a href="https://teratail.com/questions/{{ $question['id'] }}">
-                    {{ $question['title'] }}
-                </a>
-            </div>
-        @endforeach
-    </div>
     </body>
+    </x-app-layout>
 </html>

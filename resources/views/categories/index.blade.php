@@ -2,16 +2,17 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <title>天気日記</title>
+        <title>攻略情報共有chカテゴリ</title>
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
     </head>
     <body>
-        <h1>天気日記</h1>
+        <h1>攻略情報共有ch</h1>
         <a href='/posts/create'>create</a><!--createはここ-->
         <div class='posts'>
             @foreach ($posts as $post)
             　<div class='post'>
+            　    <p>アカウント名：<a href="/users/{{$post->user->id}}">{{$post->user->name}}</a></p>
                 <h2 class='title'><a href="/posts/{{ $post->id }}">{{ $post->title }}</a></h2>
                 <p class='body'>{{ $post->body }}</p>
                 <a href="/categories/{{ $post->category->id }}">{{ $post->category->name }}</a><!--カテゴリー-->
